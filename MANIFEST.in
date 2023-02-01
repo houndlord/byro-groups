@@ -1,0 +1,3 @@
+recursive-include byro-groups/static *
+recursive-include byro-groups/templates *
+recursive-include byro-groups/locale *
