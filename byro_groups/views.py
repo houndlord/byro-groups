@@ -28,6 +28,12 @@ class GroupCreationForm(forms.Form):
     def return_data(self):
         return self.cleaned_data['name']
 
+class GroupRenameForm(forms.Form):
+    name = forms.CharField()
+
+    def return_data(self):
+        return self.cleaned_data['name']
+
 class MemberGroups(MemberView, TemplateView):
     template_name = "byro_groups/member_groups.html"
 
@@ -58,8 +64,7 @@ class MemberAdd(MemberGroups):
                 )
             )
         try:
-            #group = Group
-            #group.add_member(self.get_object())
+
             GroupMembers.objects.get_or_create(member=self.get_object(), group=Group.objects.filter(name=form.data.get('groups')).first())
             messages.success(request, _("Member added to the group."))
         except Exception as e:
@@ -95,6 +100,7 @@ class GroupsView(TemplateView):
         ctx = super().get_context_data(*args, **kwargs)
         ctx["lists"] = Group.objects.all()
         ctx["form"] = GroupCreationForm()
+        ctx["renameform"] = GroupRenameForm()
         return ctx
 
 
