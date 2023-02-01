@@ -8,8 +8,10 @@ from django.views.generic.edit import FormView
 
 from byro.members.models import Member
 from byro.office.views.members import MemberView
+from byro.common.models import LogEntry
 
 from .models import Group, GroupMembers
+from . import signals
 
 
 class GroupForm(forms.Form):
@@ -111,7 +113,7 @@ class GroupAdd(GroupsView):
         if not form.is_valid():
             messages.error(request, _("Error."))
             return redirect(
-                reverse("plugins:byro_groups:groups.groups")
+                reverse("plugins:byro_groups:groups.list")
             )
         try:
             group = Group.objects
@@ -128,9 +130,8 @@ class GroupAdd(GroupsView):
 
 class GroupRemove(GroupsView):
     def post(self, request, list_id):
-        group = Group.objects.filter(pk=list_id).first()
         try:
-            group.delete()
+            Group.objects.filter(pk=list_id).delete()
             messages.success(request, _("Group deleted succesfully."))
             return redirect(
                 reverse(
@@ -144,3 +145,23 @@ class GroupRemove(GroupsView):
                 reverse(
                     "plugins:byro_groups:groups.list",)
                 )
+
+class GroupRename(GroupsView):
+    def post(self, request, list_id):
+        form = GroupRenameForm(request.POST)
+        if not form.is_valid():
+            messages.error(request, _("Error."))
+            return redirect(
+                reverse("plugins:byro_groups:groups.list")
+            )
+        try:
+            Group.objects.filter(pk=list_id).update(name = form.return_data())
+            messages.success(request, _("Group renamed succesfully"))
+        except Exception as e:
+            messages.error(
+                request, _("Error renaming the group: ") + str(e)
+            )
+        return redirect(
+            reverse(
+                "plugins:byro_groups:groups.list",)
+        )

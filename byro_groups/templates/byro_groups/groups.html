@@ -17,13 +17,18 @@
 {% if lists %}
 <table class="table table-bordered">
     <thead>
-        <th>{% trans "List" %}</th>
+        <th>{% trans "Groups" %}</th>
         <th></th>
     </thead>
     <tbody>
         {% for list in lists %}
             <tr>
                 <td>{{ list.name }}</td>
+                <td><form method='post' action='{% url "plugins:byro_groups:groups.list.rename" list_id=list.id %}'>
+                    {% csrf_token %}
+                            {% bootstrap_form renameform layout='horizontal' %}
+                            <button class="btn btn-primary" type="submit">{% trans "Rename group" %}</button>
+                </form></td>
                 <td><a href="{% url "plugins:byro_groups:groups.list.remove" list_id=list.id %}" class="btn btn-sm btn-danger">{% trans "remove" %}</a></td>
             </tr>
         {% endfor %}
