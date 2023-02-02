@@ -43,17 +43,17 @@ group_member_leave = django.dispatch.Signal()
 
 group_rename = django.dispatch.Signal()
 
-def send_new_group_signal(sender, pk):
-    new_group.send_robust(sender = sender, group_pk = pk)
+def send_new_group_signal(sender):
+    new_group.send_robust(sender = sender)
 
-def send_new_group_member_signal(sender, pk, group_pk):
-    new_group_member.send_robust(sender = sender, member_pk = pk, group_pk = group_pk)
+def send_new_group_member_signal(sender):
+    new_group_member.send_robust(sender = sender)
 
-def send_group_deletion_signal(sender, name):
-    group_deletion.send_robust(sender = sender, name = name)
+def send_group_deletion_signal(sender):
+    group_deletion.send_robust(sender)
 
-def send_group_member_leave_signal(sender, member_pk, group_pk):
-    group_member_leave.send_robust(sender = sender, member_pk = member_pk, group_pk = group_pk)
+def send_group_member_leave_signal(sender):
+    group_member_leave.send_robust(sender = sender)
 
-def send_group_rename_signal(sender, new_name, old_name):
-    group_rename.send_robust(sender = sender, new_name = new_name, old_name = old_name)
+def send_group_rename_signal(sender):
+    group_rename.send_robust(sender = sender)

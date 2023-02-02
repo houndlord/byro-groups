@@ -66,8 +66,14 @@ class MemberAdd(MemberGroups):
                 )
             )
         try:
-
-            GroupMembers.objects.get_or_create(member=self.get_object(), group=Group.objects.filter(name=form.data.get('groups')).first())
+            group = Group.objects.filter(name=form.data.get('groups')).first()
+            GroupMembers.objects.get_or_create(member=member, 
+                            group=group)
+            LogEntry.objects.create(
+                content_object=form, user=request.user, action_type="byro_groups:members.groups.add",
+                data="Member added to group"
+            )
+            signals.send_new_group_member_signal(member)
             messages.success(request, _("Member added to the group."))
         except Exception as e:
             messages.error(
@@ -84,7 +90,9 @@ class MemberRemove(MemberGroups):
     def get(self, request, pk, list_id):
         group = Group.objects.filter(pk=list_id).first()
         try:
-            GroupMembers.objects.filter(group=group).delete()
+            obj = GroupMembers.objects.filter(group=group)
+            #signals.send_group_member_leave_signal()
+            obj.delete()
             messages.success(request, _("Member removed from the group."))
             return redirect(
             reverse(
@@ -118,6 +126,7 @@ class GroupAdd(GroupsView):
         try:
             group = Group.objects
             group.create(**form.cleaned_data)
+            signals.send_new_group_signal(Group.objects.filter(**form.cleaned_data))
             messages.success(request, _("Group added succesfully"))
         except Exception as e:
             messages.error(
@@ -131,8 +140,10 @@ class GroupAdd(GroupsView):
 class GroupRemove(GroupsView):
     def post(self, request, list_id):
         try:
-            Group.objects.filter(pk=list_id).delete()
-            messages.success(request, _("Group deleted succesfully."))
+            group = Group.objects.get(pk=list_id).first()
+            send_group_deletion_signal(group)
+            group.delete()
+            messages.success(request, _(Group.objects.filter(pk=list_id).first().delete()))
             return redirect(
                 reverse(
                     "plugins:byro_groups:groups.list",)
@@ -155,7 +166,9 @@ class GroupRename(GroupsView):
                 reverse("plugins:byro_groups:groups.list")
             )
         try:
-            Group.objects.filter(pk=list_id).update(name = form.return_data())
+            group = Group.objects.filter(pk=list_id)
+            group.update(name = form.return_data())
+            signals.send_group_rename_signal(group)
             messages.success(request, _("Group renamed succesfully"))
         except Exception as e:
             messages.error(
