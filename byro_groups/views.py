@@ -10,7 +10,7 @@ from byro.members.models import Member
 from byro.office.views.members import MemberView
 from byro.common.models import LogEntry
 
-from .models import Group, GroupMembers
+from .models import Group, GroupMembers, delg
 from . import signals
 
 
@@ -70,7 +70,7 @@ class MemberAdd(MemberGroups):
             GroupMembers.objects.get_or_create(member=member, 
                             group=group)
             LogEntry.objects.create(
-                content_object=form, user=request.user, action_type="byro_groups:members.groups.add",
+                content_object=member,
                 data="Member added to group"
             )
             signals.send_new_group_member_signal(member)
@@ -88,10 +88,10 @@ class MemberAdd(MemberGroups):
 
 class MemberRemove(MemberGroups):
     def get(self, request, pk, list_id):
+        member = self.get_object()
         group = Group.objects.filter(pk=list_id).first()
         try:
-            obj = GroupMembers.objects.filter(group=group)
-            #signals.send_group_member_leave_signal()
+            obj = GroupMembers.objects.filter(group=group, member=member)
             obj.delete()
             messages.success(request, _("Member removed from the group."))
             return redirect(
@@ -112,7 +112,6 @@ class GroupsView(TemplateView):
         ctx["form"] = GroupCreationForm()
         ctx["renameform"] = GroupRenameForm()
         return ctx
-
 
 
 class GroupAdd(GroupsView):
@@ -137,26 +136,6 @@ class GroupAdd(GroupsView):
                 "plugins:byro_groups:groups.list",)
         )
 
-class GroupRemove(GroupsView):
-    def post(self, request, list_id):
-        try:
-            group = Group.objects.get(pk=list_id).first()
-            send_group_deletion_signal(group)
-            group.delete()
-            messages.success(request, _(Group.objects.filter(pk=list_id).first().delete()))
-            return redirect(
-                reverse(
-                    "plugins:byro_groups:groups.list",)
-                )
-        except Exception as e:
-            messages.error(
-                request, _("Error deleting the group: ") + str(e)
-            )
-            return redirect(
-                reverse(
-                    "plugins:byro_groups:groups.list",)
-                )
-
 class GroupRename(GroupsView):
     def post(self, request, list_id):
         form = GroupRenameForm(request.POST)
@@ -169,6 +148,22 @@ class GroupRename(GroupsView):
             group = Group.objects.filter(pk=list_id)
             group.update(name = form.return_data())
             signals.send_group_rename_signal(group)
+            messages.success(request, _("Group renamed succesfully"))
+        except Exception as e:
+            messages.error(
+                request, _("Error renaming the group: ") + str(e)
+            )
+        return redirect(
+            reverse(
+                "plugins:byro_groups:groups.list",)
+        )
+
+
+class GroupRemove(GroupsView):
+    def post(self, request, list_id):
+        try:
+            group = Group.objects.get(pk=list_id)
+            delg(list_id)
             messages.success(request, _("Group renamed succesfully"))
         except Exception as e:
             messages.error(

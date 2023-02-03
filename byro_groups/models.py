@@ -19,3 +19,8 @@ class Group(models.Model):
 class SubGroups(models.Model):
     group_id = Group.id
     subgroup_id = Group.id
+
+
+def delg(pk):
+    obj = Group.objects.filter(pk=pk)
+    obj.delete()

@@ -19,6 +19,6 @@ urlpatterns = [
         name="members.groups.remove",
     ),
     path("groups/", views.GroupAdd.as_view(), name="groups.list"),
-    path("groups/<int:list_id>/remove", views.GroupRemove.as_view(), name="groups.list.remove"),
-    path("groups/<int:list_id>/rename", views.GroupRename.as_view(), name="groups.list.rename"),
+    path("groups/<int:list_id>/remove", views.GroupRemove.as_view(), name="groups.list.remove",),
+    path("groups/<int:list_id>/rename", views.GroupRename.as_view(), name="groups.list.rename",),
 ]
