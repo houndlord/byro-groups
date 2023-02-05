@@ -8,7 +8,7 @@ from django.views.generic.edit import FormView
 
 from byro.members.models import Member
 from byro.office.views.members import MemberView
-from byro.common.models import LogEntry
+from byro.common.models import Configuration, LogEntry, LogTargetMixin
 
 from .models import Group, GroupMembers, delg
 from . import signals
@@ -100,8 +100,10 @@ class MemberRemove(MemberGroups):
                 kwargs={"pk": self.kwargs["pk"]},
                 )
             )
-        except Exception:
-            raise
+        except Exceptionas e:
+            messages.error(
+                request, _("Error removing the member: ") + str(e)
+            )
 
 class GroupsView(TemplateView):
     template_name = "byro_groups/groups.html"
@@ -145,9 +147,11 @@ class GroupRename(GroupsView):
                 reverse("plugins:byro_groups:groups.list")
             )
         try:
+            messages.success(request, _("s"))
             group = Group.objects.filter(pk=list_id)
             group.update(name = form.return_data())
             signals.send_group_rename_signal(group)
+            group.delete()
             messages.success(request, _("Group renamed succesfully"))
         except Exception as e:
             messages.error(
@@ -160,16 +164,16 @@ class GroupRename(GroupsView):
 
 
 class GroupRemove(GroupsView):
-    def post(self, request, list_id):
+    def get(self, request, list_id):
         try:
-            group = Group.objects.get(pk=list_id)
-            delg(list_id)
-            messages.success(request, _("Group renamed succesfully"))
+            messages.success(request, _("s"))
+            group.delete()
+            messages.success(request, _("Group deleted succesfully"))
         except Exception as e:
             messages.error(
-                request, _("Error renaming the group: ") + str(e)
+                request, _("Error deleting the group: ") + str(e)
             )
         return redirect(
             reverse(
-                "plugins:byro_groups:groups.list",)
+                "plugins:byro_groups:groups.list")
         )
