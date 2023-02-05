@@ -100,7 +100,7 @@ class MemberRemove(MemberGroups):
                 kwargs={"pk": self.kwargs["pk"]},
                 )
             )
-        except Exceptionas e:
+        except Exception as e:
             messages.error(
                 request, _("Error removing the member: ") + str(e)
             )
@@ -166,7 +166,7 @@ class GroupRename(GroupsView):
 class GroupRemove(GroupsView):
     def get(self, request, list_id):
         try:
-            messages.success(request, _("s"))
+            group = Group.objects.filter(pk=list_id)
             group.delete()
             messages.success(request, _("Group deleted succesfully"))
         except Exception as e:
