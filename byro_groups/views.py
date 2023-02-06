@@ -67,13 +67,10 @@ class MemberAdd(MemberGroups):
             )
         try:
             group = Group.objects.filter(name=form.data.get('groups')).first()
-            GroupMembers.objects.get_or_create(member=member, 
+            obj = GroupMembers.objects.create(member=member, 
                             group=group)
-            LogEntry.objects.create(
-                content_object=member,
-                data="Member added to group"
-            )
-            signals.send_new_group_member_signal(member)
+            member.log(self, "Member added to group")
+            signals.send_new_group_member_signal(obj)
             messages.success(request, _("Member added to the group."))
         except Exception as e:
             messages.error(
@@ -92,7 +89,9 @@ class MemberRemove(MemberGroups):
         group = Group.objects.filter(pk=list_id).first()
         try:
             obj = GroupMembers.objects.filter(group=group, member=member)
+            signals.send_group_member_leave_signal(obj)
             obj.delete()
+            member.log(self, "Member removed from the group")
             messages.success(request, _("Member removed from the group."))
             return redirect(
             reverse(
@@ -167,6 +166,7 @@ class GroupRemove(GroupsView):
     def get(self, request, list_id):
         try:
             group = Group.objects.filter(pk=list_id)
+            signals.send_group_deletion_signal(group)
             group.delete()
             messages.success(request, _("Group deleted succesfully"))
         except Exception as e:
