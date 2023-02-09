@@ -12,7 +12,7 @@ from .models import Group, GroupMembers
 @receiver(member_view)
 def groups_member_view(sender, signal, **kwargs):
     member = sender
-    count = Group.objects.filter(groupp__member=member).count()
+    count = Group.objects.filter(groups__member=member).count()
     return {
         "label": _("Groups ({count})").format(count=count),
         "url": reverse(

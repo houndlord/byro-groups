@@ -1,26 +1,29 @@
 from annoying.fields import AutoOneToOneField
 from django.db import models
 
-class GroupMembers(models.Model):
+from byro.common.models import Configuration, LogEntry, LogTargetMixin
+
+class GroupMembers(models.Model, LogTargetMixin):
+
+
+    LOG_TARGET_BASE = "byro.byro_groups"
+
+
     member = models.ForeignKey(
          to='members.Member',
          on_delete=models.CASCADE,
-         related_name="groups",
+         related_name="group_members",
     )
     group = models.ForeignKey(
          to='Group',
          on_delete=models.CASCADE,
-         related_name="groupp",
+         related_name="groups",
     )
-
+                    
 class Group(models.Model):
     name = models.CharField(max_length=100)
 
 class SubGroups(models.Model):
-    group_id = Group.id
-    subgroup_id = Group.id
-
-
-def delg(pk):
-    obj = Group.objects.filter(pk=pk)
-    obj.delete()
+    groupid = models.IntegerField(null=True)
+    subgroupid = models.IntegerField(null=True)
+      

@@ -23,7 +23,7 @@
     <tbody>
         {% for list in lists %}
             <tr>
-                <td>{{ list.name }}</td>
+                <td><a href="{% url "plugins:byro_groups:groups.members.list" pk=list.pk%}" >{{ list.name }}</a></td>
                 <td><form method='post' action='{% url "plugins:byro_groups:groups.list.rename" list_id=list.pk %}'>
                     {% csrf_token %}
                             {% bootstrap_form renameform layout='horizontal' %}

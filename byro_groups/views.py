@@ -8,9 +8,8 @@ from django.views.generic.edit import FormView
 
 from byro.members.models import Member
 from byro.office.views.members import MemberView
-from byro.common.models import Configuration, LogEntry, LogTargetMixin
 
-from .models import Group, GroupMembers, delg
+from .models import Group, GroupMembers, SubGroups
 from . import signals
 
 
@@ -19,7 +18,7 @@ class GroupForm(forms.Form):
 
     def __init__(self, *args, member, **kwargs):
         super().__init__(*args, **kwargs)
-        names = Group.objects.exclude(groupp__member=member).values_list(
+        names = Group.objects.exclude(groups__member=member).values_list(
             "name", flat=True
         )
         self.fields["groups"].choices = [(n, n) for n in names]
@@ -36,6 +35,16 @@ class GroupRenameForm(forms.Form):
     def return_data(self):
         return self.cleaned_data['name']
 
+class SubgroupForm(forms.Form):
+    groups = forms.ChoiceField()
+
+    def __init__(self, *args, pk, **kwargs):
+        super().__init__(*args, **kwargs)
+        names = Group.objects.exclude(pk=pk).values_list(
+            "name", flat=True
+        )
+        self.fields["groups"].choices = [(n, n) for n in names]
+
 class MemberGroups(MemberView, TemplateView):
     template_name = "byro_groups/member_groups.html"
 
@@ -49,7 +58,7 @@ class MemberGroups(MemberView, TemplateView):
     def get_context_data(self, *args, **kwargs):
         ctx = super().get_context_data(*args, **kwargs)
         member = self.get_object()
-        ctx["lists"] = member.groups.all()
+        ctx["lists"] = member.group_members.all()
         ctx["form"] = GroupForm(member=member)
         return ctx
 
@@ -69,7 +78,7 @@ class MemberAdd(MemberGroups):
             group = Group.objects.filter(name=form.data.get('groups')).first()
             obj = GroupMembers.objects.create(member=member, 
                             group=group)
-            member.log(self, "Member added to group")
+            member.log(self, ".member.add")
             signals.send_new_group_member_signal(obj)
             messages.success(request, _("Member added to the group."))
         except Exception as e:
@@ -91,7 +100,7 @@ class MemberRemove(MemberGroups):
             obj = GroupMembers.objects.filter(group=group, member=member)
             signals.send_group_member_leave_signal(obj)
             obj.delete()
-            member.log(self, "Member removed from the group")
+            member.log(self, ".member.remove")
             messages.success(request, _("Member removed from the group."))
             return redirect(
             reverse(
@@ -113,6 +122,70 @@ class GroupsView(TemplateView):
         ctx["form"] = GroupCreationForm()
         ctx["renameform"] = GroupRenameForm()
         return ctx
+
+class GroupMembersView(TemplateView):
+    template_name = "byro_groups/group_members.html"
+
+    @property
+    def object(self):
+        return self.get_object()
+
+    def get_object(self):
+        return Group.objects.filter(pk=self.kwargs.get("pk"))
+
+    def get_context_data(self, *args, **kwargs):
+        ctx = super().get_context_data(*args, **kwargs)
+        group = self.get_object()
+        ctx["lists"] = GroupMembers.objects.filter(group_id=self.kwargs.get("pk"))
+        ctx["subgroupform"] = SubgroupForm(pk=self.kwargs.get("pk"))
+        ctx['p'] = self.kwargs.get("pk")
+        subgroupspks = SubGroups.objects.filter(pk=self.kwargs.get("pk"))
+        ctx['subgroups'] = Group.objects.filter(pk__in=subgroupspks)
+        return ctx
+
+class SubgroupAdd(GroupMembersView):
+    def post(self, request, pk):
+        form = SubgroupForm(request.POST, pk=pk)
+        if not form.is_valid():
+            messages.error(request, _("Error."))
+            return redirect(
+                reverse(
+                    "plugins:byro_groups:groups.members.list",
+                    kwargs={"pk": self.kwargs["pk"]},
+                )
+            )
+        try:
+            group = Group.objects.filter(name=form.data.get('groups')).first()
+            obj = SubGroups.objects.create(groupid = int(group.pk), subgroupid = int(pk))   
+            signals.send_new_group_member_signal(obj)
+            messages.success(request, _("Group added as subgroup succesfully"))
+        except Exception as e:
+            messages.error(
+                request, _("Error adding the group as subgroup: ") + str(e)
+            )
+        return redirect(
+            reverse(
+                "plugins:byro_groups:groups.members.list", 
+                kwargs={"pk": self.kwargs["pk"]},
+            )
+        )
+
+class SubgroupRemove(GroupMembersView):
+    def get(self, request, list_id):
+        try:
+            obj = SubGroups.objects.filter(pk=list_id)
+            obj.delete
+            messages.success(request, _("Group removed from lists of subgroups succesfully"))
+        except Exception as e:
+            messages.error(
+                request, _("Error adding the group as subgroup: ") + str(e)
+            )
+        return redirect(
+            reverse(
+                "plugins:byro_groups:groups.members.list", 
+                kwargs={"pk": self.kwargs["pk"]},
+            )
+        )
 
 
 class GroupAdd(GroupsView):
@@ -146,11 +219,9 @@ class GroupRename(GroupsView):
                 reverse("plugins:byro_groups:groups.list")
             )
         try:
-            messages.success(request, _("s"))
             group = Group.objects.filter(pk=list_id)
             group.update(name = form.return_data())
             signals.send_group_rename_signal(group)
-            group.delete()
             messages.success(request, _("Group renamed succesfully"))
         except Exception as e:
             messages.error(
