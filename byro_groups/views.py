@@ -79,7 +79,7 @@ class MemberAdd(MemberGroups):
             group = Group.objects.filter(name=form.data.get('groups')).first()
             obj = GroupMembers.objects.create(member=member, 
                             group=group)
-            obj.log(self, ".member.add")
+            member.log(self, ".member.add")
             signals.send_new_group_member_signal(obj)
             messages.success(request, _("Member added to the group."))
         except Exception as e:
