@@ -3,6 +3,8 @@
 {% load bootstrap4 %}
 {% block content %}
 
+Group {{name}} 
+
 <form method='post' action='{% url "plugins:byro_groups:groups.members.add" pk=p %}'>
     {% csrf_token %}
             {% bootstrap_form subgroupform layout='horizontal' %}

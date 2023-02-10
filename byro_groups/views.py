@@ -140,8 +140,9 @@ class GroupMembersView(TemplateView):
         ctx["lists"] = GroupMembers.objects.filter(group_id=self.kwargs.get("pk"))
         ctx["subgroupform"] = SubgroupForm(pk=self.kwargs.get("pk"))
         ctx['p'] = self.kwargs.get("pk")
-        subgroupspks = SubGroups.objects.filter(pk=self.kwargs.get("pk"))
+        subgroupspks = SubGroups.objects.filter(groupid=self.kwargs.get("pk")).values_list('subgroupid', flat=True)
         ctx['subgroups'] = Group.objects.filter(pk__in=subgroupspks)
+        ctx['name'] = Group.objects.filter(pk=self.kwargs.get("pk")).values_list('name', flat=True)[0]
         return ctx
 
 class SubgroupAdd(GroupMembersView):
@@ -157,7 +158,7 @@ class SubgroupAdd(GroupMembersView):
             )
         try:
             group = Group.objects.filter(name=form.data.get('groups')).first()
-            obj = SubGroups.objects.create(groupid = int(group.pk), subgroupid = int(pk))   
+            obj = SubGroups.objects.create(groupid = group.pk, subgroupid = pk)
             signals.send_new_group_member_signal(obj)
             messages.success(request, _("Group added as subgroup succesfully"))
         except Exception as e:
@@ -174,7 +175,7 @@ class SubgroupAdd(GroupMembersView):
 class SubgroupRemove(GroupMembersView):
     def get(self, request, list_id, pk):
         try:
-            obj = SubGroups.objects.filter(pk=list_id)
+            obj = SubGroups.objects.filter(subgroupid=list_id)
             obj.delete()
             messages.success(request, _("Group removed from lists of subgroups succesfully"))
         except Exception as e:
