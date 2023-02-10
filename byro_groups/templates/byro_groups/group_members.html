@@ -36,7 +36,7 @@
         {% for list in lists %}
             <tr>
                 <td>{{ list.member.name }}</td>
-                <td><a href="{% url "plugins:byro_groups:members.groups.remove" pk=list.member.pk list_id=list.group.id %}" class="btn btn-sm btn-danger">{% trans "remove" %}</a></td>
+                <td><a href="{% url "plugins:byro_groups:groups.members.removemember" pk=list.member.pk list_id=list.group.id %}" class="btn btn-sm btn-danger">{% trans "remove" %}</a></td>
             </tr>
         {% endfor %}
     </tbody>
