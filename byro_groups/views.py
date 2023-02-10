@@ -11,6 +11,7 @@ from byro.office.views.members import MemberView
 
 from .models import Group, GroupMembers, SubGroups
 from . import signals
+from .utils import remove_member
 
 
 class GroupForm(forms.Form):
@@ -78,7 +79,7 @@ class MemberAdd(MemberGroups):
             group = Group.objects.filter(name=form.data.get('groups')).first()
             obj = GroupMembers.objects.create(member=member, 
                             group=group)
-            member.log(self, ".member.add")
+            obj.log(self, ".member.add")
             signals.send_new_group_member_signal(obj)
             messages.success(request, _("Member added to the group."))
         except Exception as e:
@@ -171,10 +172,10 @@ class SubgroupAdd(GroupMembersView):
         )
 
 class SubgroupRemove(GroupMembersView):
-    def get(self, request, list_id):
+    def get(self, request, list_id, pk):
         try:
             obj = SubGroups.objects.filter(pk=list_id)
-            obj.delete
+            obj.delete()
             messages.success(request, _("Group removed from lists of subgroups succesfully"))
         except Exception as e:
             messages.error(
@@ -187,6 +188,22 @@ class SubgroupRemove(GroupMembersView):
             )
         )
 
+class GroupMembersRemove(GroupMembersView):
+    def get(self, request, list_id, pk):
+        try: 
+            obj = GroupMembers.objects.filter(member__pk=pk, group__pk=list_id)
+            remove_member(obj)
+            messages.success(request, _("Member removed from the group."))
+        except Exception as e:
+            messages.error(
+                request, _("Error removing the member: ") + str(e)
+            )
+        return redirect(
+            reverse(
+                "plugins:byro_groups:groups.members.list",
+                kwargs={"pk": self.kwargs["pk"]},
+                )                
+            )
 
 class GroupAdd(GroupsView):
     def post(self, request):

@@ -23,6 +23,6 @@ urlpatterns = [
     path("groups/<int:list_id>/rename", views.GroupRename.as_view(), name="groups.list.rename",),
     path("groups/<int:pk>/members/", views.GroupMembersView.as_view(), name="groups.members.list",),
     path("groups/<int:pk>/members/add", views.SubgroupAdd.as_view(), name="groups.members.add",),
-    path("groups/<int:pk>/members/<int:list_id>/add", views.SubgroupRemove.as_view(), name="groups.members.remove",),
+    path("groups/<int:pk>/members/<int:list_id>/remove", views.SubgroupRemove.as_view(), name="groups.members.remove",),
     path("groups/<int:pk>/members/<int:list_id>/remove_member", views.GroupMembersRemove.as_view(), name="groups.members.removemember",),
 ]
