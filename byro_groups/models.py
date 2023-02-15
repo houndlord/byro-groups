@@ -26,4 +26,11 @@ class Group(models.Model):
 class SubGroups(models.Model):
     groupid = models.IntegerField(null=True)
     subgroupid = models.IntegerField(null=True)
-      
+
+    def add(groupid, subgroupid):
+        if SubGroups.objects.filter(groupid = groupid, subgroupid = subgroupid).count() >= 1:
+            raise ValueError('Subgroup already exists')
+        else:
+            obj = SubGroups.objects.create(groupid = groupid, subgroupid = subgroupid)
+            return obj
+     

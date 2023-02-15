@@ -158,8 +158,7 @@ class SubgroupAdd(GroupMembersView):
             )
         try:
             group = Group.objects.filter(name=form.data.get('groups')).first()
-            obj = SubGroups.objects.create(groupid = group.pk, subgroupid = pk)
-            signals.send_new_group_member_signal(obj)
+            signals.send_new_group_member_signal(SubGroups.add(group.pk, pk))
             messages.success(request, _("Group added as subgroup succesfully"))
         except Exception as e:
             messages.error(
