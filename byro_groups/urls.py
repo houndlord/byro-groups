@@ -18,11 +18,39 @@ urlpatterns = [
         views.MemberRemove.as_view(),
         name="members.groups.remove",
     ),
-    path("groups/", views.GroupAdd.as_view(), name="groups.list",),
-    path("groups/<int:list_id>/remove", views.GroupRemove.as_view(), name="groups.list.remove",),
-    path("groups/<int:list_id>/rename", views.GroupRename.as_view(), name="groups.list.rename",),
-    path("groups/<int:pk>/members/", views.GroupMembersView.as_view(), name="groups.members.list",),
-    path("groups/<int:pk>/members/add", views.SubgroupAdd.as_view(), name="groups.members.add",),
-    path("groups/<int:pk>/members/<int:list_id>/remove", views.SubgroupRemove.as_view(), name="groups.members.remove",),
-    path("groups/<int:pk>/members/<int:list_id>/remove_member", views.GroupMembersRemove.as_view(), name="groups.members.removemember",),
+    path(
+        "groups/",
+        views.GroupAdd.as_view(),
+        name="groups.list",
+    ),
+    path(
+        "groups/<int:list_id>/remove",
+        views.GroupRemove.as_view(),
+        name="groups.list.remove",
+    ),
+    path(
+        "groups/<int:list_id>/rename",
+        views.GroupRename.as_view(),
+        name="groups.list.rename",
+    ),
+    path(
+        "groups/<int:pk>/members/",
+        views.GroupMembersView.as_view(),
+        name="groups.members.list",
+    ),
+    path(
+        "groups/<int:pk>/members/add",
+        views.SubgroupAdd.as_view(),
+        name="groups.members.add",
+    ),
+    path(
+        "groups/<int:pk>/members/<int:list_id>/remove",
+        views.SubgroupRemove.as_view(),
+        name="groups.members.remove",
+    ),
+    path(
+        "groups/<int:pk>/members/<int:list_id>/remove_member",
+        views.GroupMembersRemove.as_view(),
+        name="groups.members.removemember",
+    ),
 ]

@@ -1,5 +1,5 @@
 from .models import Group, GroupMembers, SubGroups
-from . import signals 
+from . import signals
 
 
 def remove_member(obj):

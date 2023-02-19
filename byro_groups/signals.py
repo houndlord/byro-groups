@@ -21,6 +21,7 @@ def groups_member_view(sender, signal, **kwargs):
         "url_name": "plugins:byro_groups:members.groups.groups",
     }
 
+
 @receiver(nav_event)
 def groups_sidebar(sender, **kwargs):
     request = sender
@@ -33,6 +34,7 @@ def groups_sidebar(sender, **kwargs):
             and "member" not in request.resolver_match.url_name,
         }
 
+
 new_group = django.dispatch.Signal()
 
 group_deletion = django.dispatch.Signal()
@@ -43,17 +45,22 @@ group_member_leave = django.dispatch.Signal()
 
 group_rename = django.dispatch.Signal()
 
+
 def send_new_group_signal(sender):
-    new_group.send_robust(sender = sender)
+    new_group.send_robust(sender=sender)
+
 
 def send_new_group_member_signal(sender):
-    new_group_member.send_robust(sender = sender)
+    new_group_member.send_robust(sender=sender)
+
 
 def send_group_deletion_signal(sender):
     group_deletion.send_robust(sender)
 
+
 def send_group_member_leave_signal(sender):
-    group_member_leave.send_robust(sender = sender)
+    group_member_leave.send_robust(sender=sender)
+
 
 def send_group_rename_signal(sender):
-    group_rename.send_robust(sender = sender)
+    group_rename.send_robust(sender=sender)
