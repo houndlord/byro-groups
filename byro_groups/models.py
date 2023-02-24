@@ -1,4 +1,3 @@
-from annoying.fields import AutoOneToOneField
 from django.db import models
 
 from byro.common.models import Configuration, LogEntry, LogTargetMixin
