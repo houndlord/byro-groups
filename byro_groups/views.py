@@ -154,6 +154,7 @@ class GroupMembersView(TemplateView):
         ctx["subgroupform"] = SubgroupForm(pk=pk)
         ctx["subgroups"] = group.main_group.all()
         ctx["group"] = group
+
         return ctx
 
 
