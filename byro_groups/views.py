@@ -9,7 +9,7 @@ from django.views.generic.edit import FormView
 from byro.members.models import Member
 from byro.office.views.members import MemberView
 
-from .models import Group, GroupMembers, SubGroups
+from .models import Group, GroupMemberRelation, SubGroupRelation
 from . import signals
 from .utils import remove_member
 
@@ -19,7 +19,7 @@ class GroupForm(forms.Form):
 
     def __init__(self, *args, member, **kwargs):
         super().__init__(*args, **kwargs)
-        names = Group.objects.exclude(groups__member=member).values_list(
+        names = Group.objects.exclude(group__member=member).values_list(
             "name", flat=True
         )
         self.fields["groups"].choices = [(n, n) for n in names]
@@ -89,7 +89,7 @@ class MemberAdd(MemberGroups):
             )
         try:
             group = Group.objects.filter(name=form.data.get("groups")).first()
-            obj = GroupMembers.objects.create(member=member, group=group)
+            obj = GroupMemberRelation.objects.create(member=member, group=group)
             member.log(self, ".member.add")
             signals.send_new_group_member_signal(obj)
             messages.success(request, _("Member added to the group."))
@@ -110,7 +110,7 @@ class MemberRemove(MemberGroups):
         member = self.get_object()
         group = Group.objects.filter(pk=list_id).first()
         try:
-            obj = GroupMembers.objects.filter(group=group, member=member)
+            obj = GroupMemberRelation.objects.filter(group=group, member=member)
             signals.send_group_member_leave_signal(obj)
             obj.delete()
             member.log(self, ".member.remove")
@@ -148,17 +148,12 @@ class GroupMembersView(TemplateView):
 
     def get_context_data(self, *args, **kwargs):
         ctx = super().get_context_data(*args, **kwargs)
-        group = self.get_object()
-        ctx["lists"] = GroupMembers.objects.filter(group_id=self.kwargs.get("pk"))
-        ctx["subgroupform"] = SubgroupForm(pk=self.kwargs.get("pk"))
-        ctx["p"] = self.kwargs.get("pk")
-        subgroupspks = SubGroups.objects.filter(
-            groupid=self.kwargs.get("pk")
-        ).values_list("subgroupid", flat=True)
-        ctx["subgroups"] = Group.objects.filter(pk__in=subgroupspks)
-        ctx["name"] = Group.objects.filter(pk=self.kwargs.get("pk")).values_list(
-            "name", flat=True
-        )[0]
+        pk = self.kwargs.get("pk")
+        group = Group.objects.get(pk=pk)
+        ctx["lists"] = group.group.all()
+        ctx["subgroupform"] = SubgroupForm(pk=pk)
+        ctx["subgroups"] = group.main_group.all()
+        ctx["group"] = group
         return ctx
 
 
@@ -208,7 +203,7 @@ class SubgroupRemove(GroupMembersView):
 class GroupMembersRemove(GroupMembersView):
     def get(self, request, list_id, pk):
         try:
-            obj = GroupMembers.objects.filter(member__pk=pk, group__pk=list_id)
+            obj = GroupMemberRelation.objects.filter(member__pk=pk, group__pk=list_id)
             remove_member(obj)
             messages.success(request, _("Member removed from the group."))
         except Exception as e:

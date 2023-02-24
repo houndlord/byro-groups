@@ -1,4 +1,4 @@
-from .models import Group, GroupMembers, SubGroups
+from .models import Group, GroupMemberRelation, SubGroupRelation
 from . import signals
 
 

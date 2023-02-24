@@ -6,13 +6,13 @@ from django.utils.translation import gettext_lazy as _
 from byro.members.signals import new_member
 from byro.office.signals import member_view, nav_event
 
-from .models import Group, GroupMembers
+from .models import Group, GroupMemberRelation
 
 
 @receiver(member_view)
 def groups_member_view(sender, signal, **kwargs):
     member = sender
-    count = Group.objects.filter(groups__member=member).count()
+    count = Group.objects.filter(group__member=member).count()
     return {
         "label": _("Groups ({count})").format(count=count),
         "url": reverse(

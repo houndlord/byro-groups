@@ -3,7 +3,7 @@
 {% load bootstrap4 %}
 {% block content %}
 
-<h1>Group {{name}}</h1>
+<h1>Group {{ group.name }}</h1>
 
 {% if subgroups %}
 <table class="table table-bordered">
@@ -15,7 +15,7 @@
         {% for subgroup in subgroups %}
             <tr>
                 <td><a href="{% url "plugins:byro_groups:groups.members.list" pk=subgroup.pk %}" >{{ subgroup.name }}</a></td>
-                <td><a href="{% url "plugins:byro_groups:groups.members.remove" pk=p list_id=subgroup.pk %}" class="btn btn-sm btn-danger">{% trans "remove" %}</a></td>
+                <td><a href="{% url "plugins:byro_groups:groups.members.remove" pk=group.pk list_id=subgroup.pk %}" class="btn btn-sm btn-danger">{% trans "remove" %}</a></td>
             </tr>
         {% endfor %}
     </tbody>
@@ -39,7 +39,7 @@
 </table>
 {% endif %}
 
-<form method='post' action='{% url "plugins:byro_groups:groups.members.add" pk=p %}'>
+<form method='post' action='{% url "plugins:byro_groups:groups.members.add" pk=group.pk %}'>
     {% csrf_token %}
             {% bootstrap_form subgroupform layout='horizontal' %}
             <button class="btn btn-primary" type="submit">{% trans "Add group as subgroup" %}</button>
