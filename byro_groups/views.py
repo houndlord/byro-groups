@@ -210,7 +210,7 @@ class SubgroupRemove(GroupMembersView):
 class GroupMembersRemove(GroupMembersView):
     def get(self, request, list_id, pk):
         try:
-            obj = GroupMemberRelation.objects.filter(member__pk=pk, group__pk=list_id)
+            obj = GroupMemberRelation.objects.filter(member__pk=list_id, group__pk=pk)
             remove_member(obj)
             messages.success(request, _("Member removed from the group."))
         except Exception as e:
