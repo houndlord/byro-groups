@@ -150,11 +150,10 @@ class GroupMembersView(TemplateView):
         ctx = super().get_context_data(*args, **kwargs)
         pk = self.kwargs.get("pk")
         group = Group.objects.get(pk=pk)
-        ctx["lists"] = group.group.all()
+        ctx["group_members"] = group.group.all()
         ctx["subgroupform"] = SubgroupForm(pk=pk)
         ctx["subgroups"] = group.main_group.all()
         ctx["group"] = group
-
         return ctx
 
 
@@ -170,8 +169,12 @@ class SubgroupAdd(GroupMembersView):
                 )
             )
         try:
-            group = Group.objects.filter(name=form.data.get("groups")).first()
-            signals.send_new_group_member_signal(SubGroups.add(group.pk, pk))
+            subgroup = Group.objects.filter(name=form.data.get("groups")).first()
+            signals.send_new_group_member_signal(
+                SubGroupRelation.objects.create(
+                    main_group=self.get_object()[0], subgroup=subgroup
+                )
+            )
             messages.success(request, _("Group added as subgroup succesfully"))
         except Exception as e:
             messages.error(request, _("Error adding the group as subgroup: ") + str(e))

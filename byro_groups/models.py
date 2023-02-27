@@ -23,12 +23,12 @@ class Group(models.Model):
 
 
 class SubGroupRelation(models.Model):
-    groupid = models.ForeignKey(
+    main_group = models.ForeignKey(
         to="Group",
         on_delete=models.CASCADE,
         related_name="main_group",
     )
-    subgroupid = models.ForeignKey(
+    subgroup = models.ForeignKey(
         to="Group",
         on_delete=models.CASCADE,
         related_name="sub_group",
