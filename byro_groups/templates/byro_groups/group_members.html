@@ -14,8 +14,8 @@
     <tbody>
         {% for subgroup in subgroups %}
             <tr>
-                <td><a href="{% url "plugins:byro_groups:groups.members.list" pk=subgroup.pk %}" > {{ subgroup.subgroup.name }}</a></td>
-                <td><a href="{% url "plugins:byro_groups:groups.members.remove" pk=group.pk list_id=subgroup.pk %}" class="btn btn-sm btn-danger">{% trans "remove" %}</a></td>
+                <td><a href="{% url "plugins:byro_groups:groups.members.list" pk=subgroup.subgroup.pk %}"> {{ subgroup.subgroup.name }}</a></td>
+                <td><a href="{% url "plugins:byro_groups:groups.members.remove" pk=group.pk list_id=subgroup.subgroup.pk %}" class="btn btn-sm btn-danger">{% trans "remove" %}</a></td>
             </tr>
         {% endfor %}
     </tbody>

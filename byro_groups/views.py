@@ -189,13 +189,16 @@ class SubgroupAdd(GroupMembersView):
 class SubgroupRemove(GroupMembersView):
     def get(self, request, list_id, pk):
         try:
-            obj = SubGroups.objects.filter(subgroupid=list_id)
+            obj = Group.objects.get(pk=list_id)
+            obj = obj.sub_group
             obj.delete()
             messages.success(
                 request, _("Group removed from lists of subgroups succesfully")
             )
         except Exception as e:
-            messages.error(request, _("Error adding the group as subgroup: ") + str(e))
+            messages.error(
+                request, _("Error removing the group as subgroup: ") + str(e)
+            )
         return redirect(
             reverse(
                 "plugins:byro_groups:groups.members.list",
