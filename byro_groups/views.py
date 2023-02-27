@@ -11,7 +11,7 @@ from byro.office.views.members import MemberView
 
 from .models import Group, GroupMemberRelation, SubGroupRelation
 from . import signals
-from .utils import remove_member
+from .utils import remove_member, get_group_members_by_id
 
 
 class GroupForm(forms.Form):
