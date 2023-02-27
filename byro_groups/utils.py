@@ -16,5 +16,5 @@ def get_group_members_by_id(id):
     user_members = group.group.all()
     subgroups = group.main_group.all()
     for subgroup in subgroups:
-        user_members = user_members & subgroup.group.all()
+        user_members = user_members & subgroup.subgroup.group.all()
     return user_members
