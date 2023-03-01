@@ -170,10 +170,8 @@ class SubgroupAdd(GroupMembersView):
             )
         try:
             subgroup = Group.objects.filter(name=form.data.get("groups")).first()
-            signals.send_new_group_member_signal(
-                SubGroupRelation.objects.create(
-                    main_group=self.get_object()[0], subgroup=subgroup
-                )
+            SubGroupRelation.objects.get_or_create(
+                main_group=self.get_object()[0], subgroup=subgroup
             )
             messages.success(request, _("Group added as subgroup succesfully"))
         except Exception as e:
