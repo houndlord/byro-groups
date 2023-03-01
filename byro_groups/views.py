@@ -189,8 +189,8 @@ class SubgroupAdd(GroupMembersView):
 class SubgroupRemove(GroupMembersView):
     def get(self, request, list_id, pk):
         try:
-            obj = Group.objects.get(pk=list_id)
-            obj = obj.sub_group
+            group = Group.objects.get(pk=list_id)
+            obj = SubGroupRelation.objects.filter(subgroup=group)
             obj.delete()
             messages.success(
                 request, _("Group removed from lists of subgroups succesfully")
