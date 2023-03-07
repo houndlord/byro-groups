@@ -8,10 +8,6 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
     initial = True
 
-    dependencies = [
-        ("members", "0014_alter_member_options"),
-    ]
-
     operations = [
         migrations.CreateModel(
             name="Group",
