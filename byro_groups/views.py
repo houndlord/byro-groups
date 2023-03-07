@@ -11,7 +11,7 @@ from byro.office.views.members import MemberView
 
 from .models import Group, GroupMemberRelation, SubGroupRelation
 from . import signals
-from .utils import remove_member
+from .utils import remove_member,check_if_relation_exists   
 
 
 class GroupForm(forms.Form):
@@ -168,14 +168,17 @@ class SubgroupAdd(GroupMembersView):
                     kwargs={"pk": self.kwargs["pk"]},
                 )
             )
-        try:
-            subgroup = Group.objects.filter(name=form.data.get("groups")).first()
-            SubGroupRelation.objects.get_or_create(
-                main_group=self.get_object()[0], subgroup=subgroup
-            )
-            messages.success(request, _("Group added as subgroup succesfully"))
-        except Exception as e:
-            messages.error(request, _("Error adding the group as subgroup: ") + str(e))
+        if check_if_relation_exists(self.get_object()[0], Group.objects.filter(name=form.data.get("groups")).first()) == False:
+            try:
+                subgroup = Group.objects.filter(name=form.data.get("groups")).first()        
+                SubGroupRelation.objects.get_or_create(
+                    main_group=self.get_object()[0], subgroup=subgroup
+                )                    
+                messages.success(request, _("Group added as subgroup succesfully"))
+            except Exception as e:
+                messages.error(request, _("Error adding the group as subgroup: ") + str(e))
+        else:
+            messages.error(request, "Creating cycles of subgroups is not allowed!")
         return redirect(
             reverse(
                 "plugins:byro_groups:groups.members.list",

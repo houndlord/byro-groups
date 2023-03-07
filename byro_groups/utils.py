@@ -1,5 +1,6 @@
 from .models import Group, GroupMemberRelation, SubGroupRelation
 from . import signals
+from collections.abc import Iterable
 
 
 def remove_member(obj):
@@ -18,3 +19,18 @@ def get_group_members_by_id(id):
     for subgroup in subgroups:
         user_members = user_members | subgroup.subgroup.group.all()
     return user_members
+
+def check_if_relation_exists(maingroup, subgroup):
+    relations = subgroup.main_group.all()
+    for relation in relations:
+        while relation:
+            if isinstance(relation, Iterable):
+                for elem in relation:
+                    if elem.subgroup == maingroup:
+                        return True
+                    relation = relation.subgroup.main_group.all()
+            else:
+                if relation.subgroup == maingroup:
+                    return True
+                relation = relation.subgroup.main_group.all()
+    return False
