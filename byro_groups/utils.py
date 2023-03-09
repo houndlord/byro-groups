@@ -3,11 +3,6 @@ from . import signals
 from collections.abc import Iterable
 
 
-def remove_member(obj):
-    signals.send_group_member_leave_signal(obj)
-    obj.delete()
-
-
 def get_group_members_by_id(id):
     """
     Takes group id as input parameter.
@@ -22,6 +17,7 @@ def get_group_members_by_id(id):
 
 
 def append_relations(src, dst):
+    """Helper function."""
     for elem in src:
         dst.append(elem)
 
