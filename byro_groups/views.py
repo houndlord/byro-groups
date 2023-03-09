@@ -11,7 +11,7 @@ from byro.office.views.members import MemberView
 
 from .models import Group, GroupMemberRelation, SubGroupRelation
 from . import signals
-from .utils import remove_member,check_if_relation_exists   
+from .utils import remove_member, check_if_relation_exists
 
 
 class GroupForm(forms.Form):
@@ -48,12 +48,23 @@ class SubgroupForm(forms.Form):
         self.fields["groups"].choices = [(n, n) for n in names]
 
 
-class GroupNewMemberForm(forms.Form):
-    name = forms.ChoiceField()
+class GroupMemberInsertionForm(forms.Form):
+    member = forms.ChoiceField()
 
     def __init__(self, *args, pk, **kwargs):
         super().__init__(*args, **kwargs)
         names = Member.objects.exclude(pk=pk).values_list("name", flat=True)
+        self.fields["member"].choices = [(n, n) for n in names]
+
+
+class GroupNewMemberForm(forms.Form):
+    name = forms.ChoiceField()
+
+    def __init__(self, *args, group, **kwargs):
+        super().__init__(*args, **kwargs)
+        names = Member.objects.exclude(member__group == group).values_list(
+            "name", flat=True
+        )
         self.fields["name"].choices = [(n, n) for n in names]
 
 
@@ -168,15 +179,23 @@ class SubgroupAdd(GroupMembersView):
                     kwargs={"pk": self.kwargs["pk"]},
                 )
             )
-        if check_if_relation_exists(self.get_object()[0], Group.objects.filter(name=form.data.get("groups")).first()) == False:
+        if (
+            check_if_relation_exists(
+                self.get_object()[0],
+                Group.objects.filter(name=form.data.get("groups")).first(),
+            )
+            == False
+        ):
             try:
-                subgroup = Group.objects.filter(name=form.data.get("groups")).first()        
+                subgroup = Group.objects.filter(name=form.data.get("groups")).first()
                 SubGroupRelation.objects.get_or_create(
                     main_group=self.get_object()[0], subgroup=subgroup
-                )                    
+                )
                 messages.success(request, _("Group added as subgroup succesfully"))
             except Exception as e:
-                messages.error(request, _("Error adding the group as subgroup: ") + str(e))
+                messages.error(
+                    request, _("Error adding the group as subgroup: ") + str(e)
+                )
         else:
             messages.error(request, "Creating cycles of subgroups is not allowed!")
         return redirect(

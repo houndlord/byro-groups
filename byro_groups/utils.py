@@ -20,17 +20,28 @@ def get_group_members_by_id(id):
         user_members = user_members | subgroup.subgroup.group.all()
     return user_members
 
+
+def append_relations(src, dst):
+    for elem in src:
+        dst.append(elem)
+
+
 def check_if_relation_exists(maingroup, subgroup):
-    relations = subgroup.main_group.all()
+    """
+    Checks SubGroupRelation for possible cycles. If insertion (maingroup, subgroup) relation to table
+    will create cycle returns True.
+    """
+    relations = []
+    q = subgroup.main_group.all()
+    append_relations(q, relations)
     for relation in relations:
-        while relation:
-            if isinstance(relation, Iterable):
-                for elem in relation:
-                    if elem.subgroup == maingroup:
-                        return True
-                    relation = relation.subgroup.main_group.all()
-            else:
-                if relation.subgroup == maingroup:
+        if isinstance(relation, Iterable):
+            for elem in relation:
+                if elem.subgroup == maingroup:
                     return True
-                relation = relation.subgroup.main_group.all()
+                append_relations(elem.subgroup.main_group.all(), relations)
+        else:
+            if relation.subgroup == maingroup:
+                return True
+            append_relations(relation.subgroup.main_group.all(), relations)
     return False
