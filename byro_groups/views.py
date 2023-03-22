@@ -11,7 +11,7 @@ from byro.office.views.members import MemberView
 
 from .models import Group, GroupMemberRelation, SubGroupRelation
 from . import signals
-from .utils import remove_member, check_if_relation_exists
+from .utils import check_if_relation_exists
 
 
 class GroupForm(forms.Form):
